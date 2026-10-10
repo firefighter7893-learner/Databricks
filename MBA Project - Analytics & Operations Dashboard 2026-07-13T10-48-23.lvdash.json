@@ -1,0 +1,15 @@
+{
+  "pages": [
+    {
+      "name": "6a413dc0",
+      "displayName": "Page 1",
+      "pageType": "PAGE_TYPE_CANVAS"
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "widgetHeaderAlignment": "ALIGNMENT_UNSPECIFIED"
+    },
+    "applyModeEnabled": false
+  }
+}
