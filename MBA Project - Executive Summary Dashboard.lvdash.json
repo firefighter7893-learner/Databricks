@@ -1,0 +1,1023 @@
+{
+  "datasets": [
+    {
+      "name": "abc_summary",
+      "displayName": "ABC Summary",
+      "queryLines": [
+        "SELECT\n",
+        "  abc_category,\n",
+        "  COUNT(*) as product_count,\n",
+        "  ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) as product_percentage,\n",
+        "  ROUND(SUM(total_revenue), 2) as total_revenue,\n",
+        "  ROUND(SUM(total_revenue) * 100.0 / SUM(SUM(total_revenue)) OVER (), 2) as revenue_percentage\n",
+        "FROM\n",
+        "  abc_analysis\n",
+        "GROUP BY\n",
+        "  abc_category\n",
+        "ORDER BY\n",
+        "  abc_category"
+      ]
+    },
+    {
+      "name": "hml_analysis",
+      "displayName": "HML Analysis",
+      "queryLines": [
+        "SELECT\n",
+        "  hml_category,\n",
+        "  COUNT(*) as product_count,\n",
+        "  ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) as product_percentage,\n",
+        "  ROUND(MIN(Price), 2) as min_price,\n",
+        "  ROUND(MAX(Price), 2) as max_price,\n",
+        "  ROUND(AVG(Price), 2) as avg_price\n",
+        "FROM\n",
+        "  hml_analysis\n",
+        "GROUP BY\n",
+        "  hml_category\n",
+        "ORDER BY\n",
+        "  CASE hml_category\n",
+        "    WHEN 'High' THEN 1\n",
+        "    WHEN 'Medium' THEN 2\n",
+        "    ELSE 3\n",
+        "  END"
+      ]
+    },
+    {
+      "name": "executive_summary",
+      "displayName": "Executive Metrics",
+      "config": {
+        "source": "commercial.base.sales",
+        "measures": [
+          {
+            "name": "total_revenue",
+            "expr": "SUM(source.TotalPrice)",
+            "displayName": "Total Revenue",
+            "format": {
+              "type": "currency",
+              "currencyCode": "USD",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 0.0
+              }
+            }
+          },
+          {
+            "name": "total_quantity",
+            "expr": "SUM(source.Quantity)",
+            "displayName": "Total Quantity"
+          },
+          {
+            "name": "total_transactions",
+            "expr": "COUNT(DISTINCT source.SalesID)",
+            "displayName": "Total Transactions"
+          },
+          {
+            "name": "active_customers",
+            "expr": "COUNT(DISTINCT source.CustomerID)",
+            "displayName": "Active Customers"
+          },
+          {
+            "name": "total_products_sold",
+            "expr": "COUNT(DISTINCT source.ProductID)",
+            "displayName": "Total Products Sold"
+          },
+          {
+            "name": "avg_order_value",
+            "expr": "SUM(source.TotalPrice) / COUNT(DISTINCT source.SalesID)",
+            "displayName": "Avg Order Value",
+            "format": {
+              "type": "currency",
+              "currencyCode": "USD",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            }
+          },
+          {
+            "name": "avg_discount",
+            "expr": "AVG(source.Discount)",
+            "displayName": "Avg Discount",
+            "format": {
+              "type": "percentage",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            }
+          }
+        ],
+        "version": "1.1",
+        "dimensions": [
+          {
+            "name": "sales_date",
+            "expr": "source.SalesDate",
+            "displayName": "Sales Date"
+          },
+          {
+            "name": "sales_month",
+            "expr": "DATE_TRUNC('month', source.SalesDate)",
+            "displayName": "Sales Month"
+          },
+          {
+            "name": "sales_day",
+            "expr": "DATE_TRUNC('day', source.SalesDate)",
+            "displayName": "Sales Day"
+          },
+          {
+            "name": "product_name",
+            "expr": "products.ProductName",
+            "displayName": "Product Name"
+          },
+          {
+            "name": "product_class",
+            "expr": "products.Class",
+            "displayName": "Product Class"
+          },
+          {
+            "name": "customer_name",
+            "expr": "CONCAT(customers.FirstName, ' ', customers.LastName)",
+            "displayName": "Customer Name"
+          },
+          {
+            "name": "transaction_number",
+            "expr": "source.TransactionNumber",
+            "displayName": "Transaction Number"
+          }
+        ],
+        "joins": [
+          {
+            "name": "products",
+            "source": "commercial.base.products",
+            "on": "source.ProductID = products.ProductID"
+          },
+          {
+            "name": "customers",
+            "source": "commercial.base.customers",
+            "on": "source.CustomerID = customers.CustomerID"
+          }
+        ]
+      }
+    }
+  ],
+  "pages": [
+    {
+      "name": "48be447b",
+      "displayName": "Page 1",
+      "layout": [
+        {
+          "widget": {
+            "name": "total_revenue",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "executive_summary",
+                  "fields": [
+                    {
+                      "name": "measure(total_revenue)",
+                      "expression": "MEASURE(`total_revenue`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Total Revenue"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(total_revenue)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "total_transactions",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "executive_summary",
+                  "fields": [
+                    {
+                      "name": "measure(total_transactions)",
+                      "expression": "MEASURE(`total_transactions`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Total Transactions"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(total_transactions)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 0,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "active_customers",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "executive_summary",
+                  "fields": [
+                    {
+                      "name": "measure(active_customers)",
+                      "expression": "MEASURE(`active_customers`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Active Customers"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(active_customers)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 0,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "avg_order_value",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "executive_summary",
+                  "fields": [
+                    {
+                      "name": "measure(avg_order_value)",
+                      "expression": "MEASURE(`avg_order_value`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Avg Order Value"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(avg_order_value)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 9,
+            "y": 0,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "revenue_trend",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "executive_summary",
+                  "fields": [
+                    {
+                      "name": "monthly(sales_month)",
+                      "expression": "DATE_TRUNC(\"MONTH\", `sales_month`)"
+                    },
+                    {
+                      "name": "measure(total_revenue)",
+                      "expression": "MEASURE(`total_revenue`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Revenue Trend"
+              },
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "monthly(sales_month)",
+                  "displayName": "Month",
+                  "scale": {
+                    "type": "temporal"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(total_revenue)",
+                  "displayName": "total_revenue",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 3,
+            "width": 8,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "top_products",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "executive_summary",
+                  "fields": [
+                    {
+                      "name": "product_name",
+                      "expression": "`product_name`"
+                    },
+                    {
+                      "name": "measure(total_revenue)",
+                      "expression": "MEASURE(`total_revenue`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Top Products by Revenue"
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "product_name",
+                  "displayName": "product_name",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(total_revenue)",
+                  "displayName": "total_revenue",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "product_name",
+                  "displayName": "product_name",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 3,
+            "width": 4,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "revenue_by_class",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "executive_summary",
+                  "fields": [
+                    {
+                      "name": "measure(total_revenue)",
+                      "expression": "MEASURE(`total_revenue`)"
+                    },
+                    {
+                      "name": "product_class",
+                      "expression": "`product_class`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Revenue by Product Class"
+              },
+              "version": 3,
+              "widgetType": "pie",
+              "encodings": {
+                "angle": {
+                  "fieldName": "measure(total_revenue)",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "total_revenue"
+                },
+                "color": {
+                  "fieldName": "product_class",
+                  "displayName": "product_class",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 8,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "metrics_table",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "executive_summary",
+                  "fields": [
+                    {
+                      "name": "product_class",
+                      "expression": "`product_class`"
+                    },
+                    {
+                      "name": "measure(total_revenue)",
+                      "expression": "MEASURE(`total_revenue`)"
+                    },
+                    {
+                      "name": "measure(total_transactions)",
+                      "expression": "MEASURE(`total_transactions`)"
+                    },
+                    {
+                      "name": "measure(active_customers)",
+                      "expression": "MEASURE(`active_customers`)"
+                    },
+                    {
+                      "name": "measure(avg_order_value)",
+                      "expression": "MEASURE(`avg_order_value`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Key Metrics Summary"
+              },
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "product_class"
+                  },
+                  {
+                    "fieldName": "measure(total_revenue)"
+                  },
+                  {
+                    "fieldName": "measure(total_transactions)"
+                  },
+                  {
+                    "fieldName": "measure(active_customers)"
+                  },
+                  {
+                    "fieldName": "measure(avg_order_value)"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 8,
+            "width": 6,
+            "height": 5
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "additional_kpis",
+      "displayName": "Additional KPIs",
+      "layout": [
+        {
+          "widget": {
+            "name": "total_quantity",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "executive_summary",
+                  "fields": [
+                    {
+                      "name": "measure(total_quantity)",
+                      "expression": "MEASURE(`total_quantity`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Total Quantity Sold"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(total_quantity)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "total_products",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "executive_summary",
+                  "fields": [
+                    {
+                      "name": "measure(total_products_sold)",
+                      "expression": "MEASURE(`total_products_sold`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Total Products Sold"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(total_products_sold)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 0,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "avg_discount",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "executive_summary",
+                  "fields": [
+                    {
+                      "name": "measure(avg_discount)",
+                      "expression": "MEASURE(`avg_discount`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Average Discount"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(avg_discount)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 0,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "transactions_count",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "executive_summary",
+                  "fields": [
+                    {
+                      "name": "measure(total_transactions)",
+                      "expression": "MEASURE(`total_transactions`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Transaction Count"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(total_transactions)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 9,
+            "y": 0,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "quantity_trend",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "executive_summary",
+                  "fields": [
+                    {
+                      "name": "monthly(sales_month)",
+                      "expression": "DATE_TRUNC(\"MONTH\", `sales_month`)"
+                    },
+                    {
+                      "name": "measure(total_quantity)",
+                      "expression": "MEASURE(`total_quantity`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Quantity Trend Over Time"
+              },
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "monthly(sales_month)",
+                  "displayName": "Month",
+                  "scale": {
+                    "type": "temporal"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(total_quantity)",
+                  "displayName": "total_quantity",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 3,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "customer_trend",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "executive_summary",
+                  "fields": [
+                    {
+                      "name": "monthly(sales_month)",
+                      "expression": "DATE_TRUNC(\"MONTH\", `sales_month`)"
+                    },
+                    {
+                      "name": "measure(active_customers)",
+                      "expression": "MEASURE(`active_customers`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Active Customers Trend"
+              },
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "monthly(sales_month)",
+                  "displayName": "Month",
+                  "scale": {
+                    "type": "temporal"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(active_customers)",
+                  "displayName": "active_customers",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 3,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "quantity_by_class",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "executive_summary",
+                  "fields": [
+                    {
+                      "name": "product_class",
+                      "expression": "`product_class`"
+                    },
+                    {
+                      "name": "measure(total_quantity)",
+                      "expression": "MEASURE(`total_quantity`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Quantity by Product Class"
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "product_class",
+                  "displayName": "product_class",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(total_quantity)",
+                  "displayName": "total_quantity",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "product_class",
+                  "displayName": "product_class",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 8,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "product_metrics",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "executive_summary",
+                  "fields": [
+                    {
+                      "name": "product_name",
+                      "expression": "`product_name`"
+                    },
+                    {
+                      "name": "measure(total_quantity)",
+                      "expression": "MEASURE(`total_quantity`)"
+                    },
+                    {
+                      "name": "measure(total_products_sold)",
+                      "expression": "MEASURE(`total_products_sold`)"
+                    },
+                    {
+                      "name": "measure(avg_discount)",
+                      "expression": "MEASURE(`avg_discount`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Product Performance Metrics"
+              },
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "product_name"
+                  },
+                  {
+                    "fieldName": "measure(total_quantity)"
+                  },
+                  {
+                    "fieldName": "measure(total_products_sold)"
+                  },
+                  {
+                    "fieldName": "measure(avg_discount)"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 8,
+            "width": 6,
+            "height": 5
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "widgetHeaderAlignment": "ALIGNMENT_UNSPECIFIED"
+    },
+    "applyModeEnabled": false
+  }
+}
